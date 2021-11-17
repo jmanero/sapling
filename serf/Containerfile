@@ -1,0 +1,20 @@
+FROM fedora:34 AS build
+
+RUN dnf install -y unzip
+
+## Get platform-specific variables form builder
+ARG TARGETOS
+ARG TARGETARCH
+
+ARG version=0.8.2
+ARG artifact=serf_${version}_${TARGETOS}_${TARGETARCH}.zip
+ARG archive=https://releases.hashicorp.com/serf/${version}/${artifact}
+
+RUN echo "Fetching archive from ${archive}"
+ADD ${archive} .
+RUN unzip ${artifact}
+
+FROM fedora:34
+
+COPY --from=build serf /usr/local/bin
+ENTRYPOINT [ "/usr/local/bin/serf" ]
